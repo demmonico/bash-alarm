@@ -9,7 +9,13 @@ git clone https://github.com/demmonico/bash-alarm . && chmod +x alarm && chmod +
 ```bash
 # [optional] ### to define Slack ENV vars
 # you may also declare them in ~/.slackrc file. See Slack channel notifier doc
-touch channels/.slackrc && nano channels/.slackrc
+touch channels/.slackrc
+cat channels/.slackrc <<EOL
+APP_SLACK_WEBHOOK='https://hooks.slack.com/services/<WEBHOOK_KEY>'
+APP_SLACK_CHANNEL='#test-alert'
+APP_SLACK_USERNAME='AlarMan'
+APP_SLACK_ICON_EMOJI=':shipit:'
+EOL
 ```
 
 ### USAGE

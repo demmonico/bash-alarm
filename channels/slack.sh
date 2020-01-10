@@ -7,8 +7,14 @@
 # Installation
 #       $ curl -s https://raw.githubusercontent.com/demmonico/bash-alarm/master/channels/slack.sh --output /usr/bin/slack && chmod +x /usr/bin/slack
 # [opt] ### to define some ENV vars
-# [opt] $ touch $HOME/.slackrc && nano $HOME/.slackrc
-# [opt] ### you may also declare them in ./.slackrc file.
+# [opt] $ touch ./.slackrc && nano ./.slackrc
+# [opt] $ cat channels/.slackrc <<EOL
+#         APP_SLACK_WEBHOOK='https://hooks.slack.com/services/<WEBHOOK_KEY>'
+#         APP_SLACK_CHANNEL='#test-alert'
+#         APP_SLACK_USERNAME='AlarMan'
+#         APP_SLACK_ICON_EMOJI=':shipit:'
+#         EOL
+# [opt] ### you may also declare them in $HOME/.slackrc file.
 #
 # VARIABLES
 #
