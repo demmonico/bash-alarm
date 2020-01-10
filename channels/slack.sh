@@ -27,13 +27,14 @@
 #     $ slack  MESSAGE
 ####################################################################################
 
-# publish env vars from the .slackrc file
+# publish env vars from the ~/.slackrc file
+if [ -f $HOME/.slackrc ]; then
+    . $HOME/.slackrc
+fi
+# publish env vars from the ./.slackrc file
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f $DIR/.slackrc ]; then
     . $DIR/.slackrc
-fi
-if [ -f $HOME/.slackrc ]; then
-    . $HOME/.slackrc
 fi
 
 ####################################################################################
