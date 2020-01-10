@@ -59,7 +59,7 @@ _ps() {
 
 _sendSlackNotification() {
   local MSG=$1
-  local SLACK_NOTIFIER="$DIR/slack.sh"
+  local SLACK_NOTIFIER="$DIR/channels/slack.sh"
 
   if [ -f "${SLACK_NOTIFIER}" ] && [ -x "${SLACK_NOTIFIER}" ]; then
     echo "Sending Slack notification ... "
