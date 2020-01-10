@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+####################################################################################
+# Slack Bash console script for sending sending alerts (for now only via Slack).
+####################################################################################
+# Installation
+#       $ git clone https://github.com/demmonico/bash-alarm . && chmod +x alarm && chmod +x channels/*
+# [opt] ### to define Slack ENV vars
+# [opt] $ touch channels/.slackrc && nano channels/.slackrc
+# [opt] ### you may also declare them in ~/.slackrc file. See Slack channel notifier doc
+####################################################################################
+# USAGE
+#   Manually run, just log event
+#     $ alarm ps cron
+#
+#   Manually run, log event and send notification if treshold exceeded
+#     $ alarm ps cron 12
+#
+#   Scheduled run, log event and send notification if treshold exceeded
+#     $ watch -n 1 -d './alarm ps cron 12'
+####################################################################################
+
+# Shortcuts for debug
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_DIR='/tmp'
+LOG_FILENAME_PATTERN='alarm-<<ALARM_ACTION_NAME>>.log'
+
+####################
+
+action_ps() {
+  local PROCESS_PATTERN=$1
+  local THRESHOLD=$2
+
+  PROCESSES=$( _ps "faux" | grep -E "(${PROCESS_PATTERN}|PID)" | grep -v grep | awk "END { print NR - 1 }")
+
+  local MSG="Number of current running /${PROCESS_PATTERN}/ processes: *${PROCESSES}* (threshold ${THRESHOLD:-no})"
+  echo "${MSG}"
+
+  # log
+  local LOG_FILENAME="${LOG_FILENAME_PATTERN//<<ALARM_ACTION_NAME>>/$ALARM_ACTION_NAME}"
+  _log "${LOG_FILENAME}" "${MSG}"
+
+  # slack notification
+  if [ -n "${THRESHOLD}" ] && [ "${PROCESSES}" -gt "${THRESHOLD}" ]; then
+    _sendSlackNotification "Damn high ${MSG}"
+  fi
+}
+
+_ps() {
+    # Stupid BSD ps doesn't have the "f" flag.
+    # Remove the "f" flag from `ps` commands if OS X.
+    local CMD=$1
+    if [[ $OSTYPE == darwin* ]]; then
+        CMD="${CMD/f/}"
+    fi
+    command ps $CMD
+}
+
+_sendSlackNotification() {
+  local MSG=$1
+  local SLACK_NOTIFIER="$DIR/slack.sh"
+
+  if [ -f "${SLACK_NOTIFIER}" ] && [ -x "${SLACK_NOTIFIER}" ]; then
+    echo "Sending Slack notification ... "
+    . "${SLACK_NOTIFIER}" "${MSG}"
+    echo "done"
+  else
+    echo "Unable to find Slack Notifier"
+    exit 1
+  fi
+}
+
+_log() {
+  local LOG_FILE=$1
+  local MSG=$2
+  if [ -z "${LOG_FILE}" ] || [ -z "${MSG}" ]; then
+    echo "Fail log alarm due to empty required params"
+    exit 1
+  fi
+
+  LOG_FILE="${LOG_DIR}/${LOG_FILE}"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ${MSG}" >> "${LOG_FILE}"
+}
+
+####################
+
+ALARM_ACTION_NAME=$1
+if [ -z "${ALARM_ACTION_NAME}" ]; then
+  echo "Bad alarm name due to empty scenario"
+  exit 1
+fi
+
+ALARM_ACTION_NAME="action_$ALARM_ACTION_NAME"
+
+# reduce arguments
+shift
+
+# call alarm action
+$ALARM_ACTION_NAME ${@}
